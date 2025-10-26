@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>World Ping 2.0 🌐</title>
+  <title>World Ping 3.0 ⚡</title>
 
   <!-- Leaflet.js -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -13,17 +13,17 @@
     html, body {
       height: 100%;
       margin: 0;
-      background: #0b0b0b;
+      background: #0a0a0a;
       color: white;
       font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow: hidden;
     }
 
     h1 {
-      margin: 10px 0 5px 0;
+      margin: 15px 0 5px;
       font-weight: 500;
     }
 
@@ -31,18 +31,18 @@
       width: 95vw;
       height: 85vh;
       border-radius: 10px;
-      box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+      box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
     }
 
     #start {
       background: #00ffff22;
       border: 1px solid cyan;
       color: white;
-      padding: 8px 20px;
+      padding: 10px 24px;
       border-radius: 6px;
       cursor: pointer;
       font-size: 1rem;
-      transition: 0.2s;
+      transition: 0.25s;
       margin-bottom: 10px;
     }
 
@@ -52,102 +52,116 @@
     }
 
     .leaflet-tooltip {
-      background: rgba(0,0,0,0.7);
+      background: rgba(0, 0, 0, 0.8);
       color: white;
       border: none;
       border-radius: 4px;
       padding: 3px 6px;
       font-size: 0.8rem;
     }
+
+    #status {
+      font-family: monospace;
+      margin-top: 5px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
   <h1>🌐 World Ping 2.0</h1>
-  <p>Hover over a dot to see the city name • Click “Start Ping Test” to simulate latency</p>
+  <p>Hover to see city names • Click “Start Ping Test” for real latency</p>
   <button id="start">Start Ping Test</button>
   <div id="map"></div>
+  <div id="status"></div>
 
   <script>
-    // Initialize the map
+    // Initialize map
     const map = L.map('map', {
       worldCopyJump: true,
       minZoom: 2,
       maxZoom: 8
     }).setView([20, 0], 2);
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
+    // Dark grey basemap
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap & CartoDB',
+      subdomains: 'abcd',
+      maxZoom: 19
     }).addTo(map);
 
-    // Sample of cities over 1 million (abbreviated for performance)
-    // You can expand this list or load dynamically from a JSON file
+    // Cities (expand as needed)
     const cities = [
-      { name: "Tokyo", lat: 35.6895, lon: 139.6917 },
-      { name: "Delhi", lat: 28.7041, lon: 77.1025 },
-      { name: "Shanghai", lat: 31.2304, lon: 121.4737 },
-      { name: "São Paulo", lat: -23.5505, lon: -46.6333 },
-      { name: "Mexico City", lat: 19.4326, lon: -99.1332 },
-      { name: "Cairo", lat: 30.0444, lon: 31.2357 },
-      { name: "Mumbai", lat: 19.0760, lon: 72.8777 },
-      { name: "Beijing", lat: 39.9042, lon: 116.4074 },
-      { name: "Dhaka", lat: 23.8103, lon: 90.4125 },
-      { name: "Osaka", lat: 34.6937, lon: 135.5023 },
-      { name: "New York", lat: 40.7128, lon: -74.0060 },
-      { name: "London", lat: 51.5074, lon: -0.1278 },
-      { name: "Los Angeles", lat: 34.0522, lon: -118.2437 },
-      { name: "Istanbul", lat: 41.0082, lon: 28.9784 },
-      { name: "Buenos Aires", lat: -34.6037, lon: -58.3816 },
-      { name: "Kolkata", lat: 22.5726, lon: 88.3639 },
-      { name: "Lagos", lat: 6.5244, lon: 3.3792 },
-      { name: "Tehran", lat: 35.6892, lon: 51.3890 },
-      { name: "Jakarta", lat: -6.2088, lon: 106.8456 },
-      { name: "Paris", lat: 48.8566, lon: 2.3522 },
-      { name: "Bangkok", lat: 13.7563, lon: 100.5018 },
-      { name: "Moscow", lat: 55.7558, lon: 37.6173 },
-      { name: "Karachi", lat: 24.8607, lon: 67.0011 },
-      { name: "Seoul", lat: 37.5665, lon: 126.9780 },
-      { name: "Kinshasa", lat: -4.4419, lon: 15.2663 },
-      { name: "Lima", lat: -12.0464, lon: -77.0428 },
-      { name: "Bogotá", lat: 4.7110, lon: -74.0721 },
-      { name: "Sydney", lat: -33.8688, lon: 151.2093 },
-      { name: "Toronto", lat: 43.65107, lon: -79.347015 },
-      { name: "Chicago", lat: 41.8781, lon: -87.6298 },
-      { name: "Singapore", lat: 1.3521, lon: 103.8198 },
-      { name: "Hong Kong", lat: 22.3193, lon: 114.1694 },
-      { name: "Madrid", lat: 40.4168, lon: -3.7038 },
-      { name: "Rome", lat: 41.9028, lon: 12.4964 },
-      { name: "Berlin", lat: 52.52, lon: 13.405 },
-      { name: "Cape Town", lat: -33.9249, lon: 18.4241 },
-      { name: "Johannesburg", lat: -26.2041, lon: 28.0473 },
-      { name: "Melbourne", lat: -37.8136, lon: 144.9631 },
-      { name: "Barcelona", lat: 41.3851, lon: 2.1734 },
-      { name: "San Francisco", lat: 37.7749, lon: -122.4194 }
+      { name: "New York", lat: 40.7128, lon: -74.0060, region: "America/New_York" },
+      { name: "London", lat: 51.5074, lon: -0.1278, region: "Europe/London" },
+      { name: "Tokyo", lat: 35.6895, lon: 139.6917, region: "Asia/Tokyo" },
+      { name: "Sydney", lat: -33.8688, lon: 151.2093, region: "Australia/Sydney" },
+      { name: "Sao Paulo", lat: -23.5505, lon: -46.6333, region: "America/Sao_Paulo" },
+      { name: "Johannesburg", lat: -26.2041, lon: 28.0473, region: "Africa/Johannesburg" },
+      { name: "Toronto", lat: 43.65107, lon: -79.347015, region: "America/New_York" },
+      { name: "Paris", lat: 48.8566, lon: 2.3522, region: "Europe/London" },
+      { name: "Delhi", lat: 28.7041, lon: 77.1025, region: "Asia/Tokyo" },
+      { name: "Cairo", lat: 30.0444, lon: 31.2357, region: "Africa/Johannesburg" },
+      { name: "Mexico City", lat: 19.4326, lon: -99.1332, region: "America/Sao_Paulo" },
+      { name: "Los Angeles", lat: 34.0522, lon: -118.2437, region: "America/New_York" },
+      { name: "Moscow", lat: 55.7558, lon: 37.6173, region: "Europe/London" },
+      { name: "Beijing", lat: 39.9042, lon: 116.4074, region: "Asia/Tokyo" },
+      { name: "Bangkok", lat: 13.7563, lon: 100.5018, region: "Asia/Tokyo" },
+      { name: "Buenos Aires", lat: -34.6037, lon: -58.3816, region: "America/Sao_Paulo" },
+      { name: "Istanbul", lat: 41.0082, lon: 28.9784, region: "Europe/London" },
+      { name: "Seoul", lat: 37.5665, lon: 126.9780, region: "Asia/Tokyo" },
+      { name: "Lagos", lat: 6.5244, lon: 3.3792, region: "Africa/Johannesburg" },
+      { name: "Singapore", lat: 1.3521, lon: 103.8198, region: "Asia/Tokyo" },
     ];
 
-    // Create city markers
+    // Create markers
     const dots = [];
     cities.forEach(c => {
-      const dot = L.circleMarker([c.lat, c.lon], {
+      const marker = L.circleMarker([c.lat, c.lon], {
         radius: 4,
         color: 'cyan',
         fillColor: 'cyan',
         fillOpacity: 0.8
       }).addTo(map);
-
-      dot.bindTooltip(c.name, { permanent: false, direction: "top" });
-      dots.push({ marker: dot, name: c.name });
+      marker.bindTooltip(c.name, { direction: "top" });
+      dots.push({ marker, ...c });
     });
 
-    // Simulated Ping Test
-    document.getElementById('start').addEventListener('click', async () => {
+    // Function to measure latency
+    async function measurePing(region) {
+      const url = `https://worldtimeapi.org/api/timezone/${region}`;
+      const start = performance.now();
+      try {
+        await fetch(url, { cache: "no-store", mode: "cors" });
+        return Math.round(performance.now() - start);
+      } catch (err) {
+        return null;
+      }
+    }
+
+    // Run the ping test
+    document.getElementById("start").addEventListener("click", async () => {
+      document.getElementById("status").innerText = "Pinging global servers...";
+      const regionCache = {};
+
       for (const d of dots) {
-        const latency = Math.random() * 500; // fake ping ms
-        let color = 'red';
-        if (latency < 100) color = 'lime';
-        else if (latency < 250) color = 'yellow';
+        if (!regionCache[d.region]) {
+          const latency = await measurePing(d.region);
+          regionCache[d.region] = latency;
+        }
+
+        const latency = regionCache[d.region];
+        let color = "gray";
+
+        if (latency === null) color = "gray";
+        else if (latency < 100) color = "lime";
+        else if (latency < 250) color = "yellow";
+        else color = "red";
+
         d.marker.setStyle({ color, fillColor: color });
       }
+
+      document.getElementById("status").innerText = "✅ Ping test complete!";
     });
   </script>
 </body>
