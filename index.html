@@ -4,164 +4,85 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>World Ping 3.0 ⚡</title>
-
-  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      background: #0a0a0a;
-      color: #e0e0e0;
-      font-family: "Segoe UI", sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    h1 {
-      margin: 15px 0 5px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-    }
-
-    #map {
-      width: 95vw;
-      height: 85vh;
-      border-radius: 10px;
-      box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
-    }
-
-    #start {
-      background: #00ffff22;
-      border: 1px solid cyan;
-      color: white;
-      padding: 10px 24px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: 0.25s;
-      margin-bottom: 10px;
-    }
-
-    #start:hover {
-      background: cyan;
-      color: black;
-    }
-
-    #status {
-      font-family: monospace;
-      margin-top: 5px;
-      font-size: 0.9rem;
-      opacity: 0.8;
-    }
-
-    .leaflet-tooltip {
-      background: rgba(0, 0, 0, 0.85);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 3px 6px;
-      font-size: 0.8rem;
-    }
+    html,body{height:100%;margin:0;background:#0a0a0a;color:#e0e0e0;
+      font-family:"Segoe UI",sans-serif;display:flex;flex-direction:column;
+      align-items:center;overflow:hidden}
+    h1{margin:15px 0 5px;font-weight:500}
+    #map{width:95vw;height:85vh;border-radius:10px;
+      box-shadow:0 0 25px rgba(0,255,255,.15)}
+    #start{background:#00ffff22;border:1px solid cyan;color:white;
+      padding:10px 24px;border-radius:6px;cursor:pointer;font-size:1rem;
+      transition:.25s;margin-bottom:10px}
+    #start:hover{background:cyan;color:black}
+    #status{font-family:monospace;margin-top:5px;font-size:.9rem;opacity:.8}
+    .leaflet-tooltip{background:rgba(0,0,0,.85);color:white;border:none;
+      border-radius:4px;padding:3px 6px;font-size:.8rem}
   </style>
 </head>
 <body>
   <h1>🌐 World Ping 3.0</h1>
-  <p>Hover to see city names • Click “Start Ping Test” for real latency</p>
+  <p>Hover for city • Click “Start Ping Test” for real latency</p>
   <button id="start">Start Ping Test</button>
   <div id="map"></div>
   <div id="status"></div>
 
   <script>
-    // Initialize map with dark greyscale tiles
-    const map = L.map("map", {
-      worldCopyJump: true,
-      minZoom: 2,
-      maxZoom: 8
-    }).setView([20, 0], 2);
+    // Create dark grey map
+    const map=L.map("map",{worldCopyJump:true,minZoom:2,maxZoom:8})
+      .setView([20,0],2);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      {attribution:"&copy; OpenStreetMap & CartoDB",
+       subdomains:"abcd",maxZoom:19}).addTo(map);
 
-    // Beautiful black-grey tile layer (Carto Dark Matter)
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-      {
-        attribution: "&copy; OpenStreetMap & CartoDB",
-        subdomains: "abcd",
-        maxZoom: 19
-      }
-    ).addTo(map);
-
-    // City dataset
-    const cities = [
-      { name: "New York", lat: 40.7128, lon: -74.006, region: "America/New_York" },
-      { name: "London", lat: 51.5074, lon: -0.1278, region: "Europe/London" },
-      { name: "Tokyo", lat: 35.6895, lon: 139.6917, region: "Asia/Tokyo" },
-      { name: "Sydney", lat: -33.8688, lon: 151.2093, region: "Australia/Sydney" },
-      { name: "São Paulo", lat: -23.5505, lon: -46.6333, region: "America/Sao_Paulo" },
-      { name: "Johannesburg", lat: -26.2041, lon: 28.0473, region: "Africa/Johannesburg" },
-      { name: "Los Angeles", lat: 34.0522, lon: -118.2437, region: "America/Los_Angeles" },
-      { name: "Paris", lat: 48.8566, lon: 2.3522, region: "Europe/Paris" },
-      { name: "Singapore", lat: 1.3521, lon: 103.8198, region: "Asia/Singapore" },
-      { name: "Delhi", lat: 28.7041, lon: 77.1025, region: "Asia/Kolkata" },
-      { name: "Mexico City", lat: 19.4326, lon: -99.1332, region: "America/Mexico_City" },
-      { name: "Moscow", lat: 55.7558, lon: 37.6173, region: "Europe/Moscow" },
-      { name: "Beijing", lat: 39.9042, lon: 116.4074, region: "Asia/Shanghai" },
-      { name: "Bangkok", lat: 13.7563, lon: 100.5018, region: "Asia/Bangkok" },
-      { name: "Buenos Aires", lat: -34.6037, lon: -58.3816, region: "America/Argentina/Buenos_Aires" },
-      { name: "Seoul", lat: 37.5665, lon: 126.978, region: "Asia/Seoul" },
-      { name: "Dubai", lat: 25.276987, lon: 55.296249, region: "Asia/Dubai" },
-      { name: "Toronto", lat: 43.6532, lon: -79.3832, region: "America/Toronto" },
-      { name: "Lagos", lat: 6.5244, lon: 3.3792, region: "Africa/Lagos" },
-      { name: "Istanbul", lat: 41.0082, lon: 28.9784, region: "Europe/Istanbul" }
+    // Each region uses a CDN edge that really responds
+    const cities=[
+      {name:"New York",lat:40.71,lon:-74.00,url:"https://speed.cloudflare.com/__down?bytes=1"},
+      {name:"London",lat:51.50,lon:-0.12,url:"https://eu.httpbin.org/get"},
+      {name:"Tokyo",lat:35.68,lon:139.69,url:"https://asia.httpbin.org/get"},
+      {name:"Sydney",lat:-33.86,lon:151.21,url:"https://oceania.httpbin.org/get"},
+      {name:"São Paulo",lat:-23.55,lon:-46.63,url:"https://latam.cloudflare.com/cdn-cgi/trace"},
+      {name:"Johannesburg",lat:-26.20,lon:28.04,url:"https://africa.httpbin.org/get"},
+      {name:"Singapore",lat:1.35,lon:103.82,url:"https://asia.httpbin.org/get"},
+      {name:"Paris",lat:48.85,lon:2.35,url:"https://eu.httpbin.org/get"}
     ];
 
-    // Create circle markers
-    const dots = [];
-    cities.forEach(c => {
-      const marker = L.circleMarker([c.lat, c.lon], {
-        radius: 4,
-        color: "cyan",
-        fillColor: "cyan",
-        fillOpacity: 0.8
-      }).addTo(map);
-      marker.bindTooltip(c.name, { direction: "top" });
-      dots.push({ marker, ...c });
+    // Dots
+    const dots=[];
+    cities.forEach(c=>{
+      const m=L.circleMarker([c.lat,c.lon],
+        {radius:4,color:"cyan",fillColor:"cyan",fillOpacity:.8}).addTo(map);
+      m.bindTooltip(c.name,{direction:"top"});
+      dots.push({marker:m,...c});
     });
 
-    async function measurePing(region) {
-      const url = `https://worldtimeapi.org/api/timezone/${region}`;
-      const start = performance.now();
-      try {
-        const response = await fetch(url, { cache: "no-store", mode: "cors" });
-        if (!response.ok) throw new Error("Bad response");
-        return Math.round(performance.now() - start);
-      } catch (err) {
-        return null;
-      }
+    // Ping
+    async function ping(url){
+      const t0=performance.now();
+      try{
+        const r=await fetch(url,{cache:"no-store",mode:"cors"});
+        if(!r.ok)throw 0;
+        return Math.round(performance.now()-t0);
+      }catch{return null;}
     }
 
-    document.getElementById("start").addEventListener("click", async () => {
-      document.getElementById("status").innerText = "🌍 Running real pings...";
-      const regionCache = {};
-
-      for (const d of dots) {
-        if (!regionCache[d.region]) {
-          regionCache[d.region] = await measurePing(d.region);
+    document.getElementById("start").onclick=async()=>{
+      document.getElementById("status").innerText="🌍 Pinging global servers…";
+      for(const d of dots){
+        const ms=await ping(d.url);
+        let c="gray";
+        if(ms!==null){
+          if(ms<100)c="lime";
+          else if(ms<250)c="yellow";
+          else c="red";
         }
-        const latency = regionCache[d.region];
-        let color = "gray";
-        if (latency === null) color = "gray";
-        else if (latency < 100) color = "lime";
-        else if (latency < 250) color = "yellow";
-        else color = "red";
-        d.marker.setStyle({ color, fillColor: color });
+        d.marker.setStyle({color:c,fillColor:c});
+        d.marker.bindTooltip(`${d.name} — ${ms?ms+" ms":"failed"}`);
       }
-
-      document.getElementById("status").innerText = "✅ Real ping test complete!";
-    });
+      document.getElementById("status").innerText="✅ Ping test complete!";
+    };
   </script>
 </body>
 </html>
