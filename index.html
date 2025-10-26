@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>World Ping 3.0 ⚡</title>
 
-  <!-- Leaflet.js -->
+  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -14,8 +14,8 @@
       height: 100%;
       margin: 0;
       background: #0a0a0a;
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
+      color: #e0e0e0;
+      font-family: "Segoe UI", sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -25,13 +25,14 @@
     h1 {
       margin: 15px 0 5px;
       font-weight: 500;
+      letter-spacing: 0.5px;
     }
 
     #map {
       width: 95vw;
       height: 85vh;
       border-radius: 10px;
-      box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
+      box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
     }
 
     #start {
@@ -51,117 +52,115 @@
       color: black;
     }
 
-    .leaflet-tooltip {
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 3px 6px;
-      font-size: 0.8rem;
-    }
-
     #status {
       font-family: monospace;
       margin-top: 5px;
       font-size: 0.9rem;
       opacity: 0.8;
     }
+
+    .leaflet-tooltip {
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-size: 0.8rem;
+    }
   </style>
 </head>
 <body>
-  <h1>🌐 World Ping 2.0</h1>
+  <h1>🌐 World Ping 3.0</h1>
   <p>Hover to see city names • Click “Start Ping Test” for real latency</p>
   <button id="start">Start Ping Test</button>
   <div id="map"></div>
   <div id="status"></div>
 
   <script>
-    // Initialize map
-    const map = L.map('map', {
+    // Initialize map with dark greyscale tiles
+    const map = L.map("map", {
       worldCopyJump: true,
       minZoom: 2,
       maxZoom: 8
     }).setView([20, 0], 2);
 
-    // Dark grey basemap
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap & CartoDB',
-      subdomains: 'abcd',
-      maxZoom: 19
-    }).addTo(map);
+    // Beautiful black-grey tile layer (Carto Dark Matter)
+    L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      {
+        attribution: "&copy; OpenStreetMap & CartoDB",
+        subdomains: "abcd",
+        maxZoom: 19
+      }
+    ).addTo(map);
 
-    // Cities (expand as needed)
+    // City dataset
     const cities = [
-      { name: "New York", lat: 40.7128, lon: -74.0060, region: "America/New_York" },
+      { name: "New York", lat: 40.7128, lon: -74.006, region: "America/New_York" },
       { name: "London", lat: 51.5074, lon: -0.1278, region: "Europe/London" },
       { name: "Tokyo", lat: 35.6895, lon: 139.6917, region: "Asia/Tokyo" },
       { name: "Sydney", lat: -33.8688, lon: 151.2093, region: "Australia/Sydney" },
-      { name: "Sao Paulo", lat: -23.5505, lon: -46.6333, region: "America/Sao_Paulo" },
+      { name: "São Paulo", lat: -23.5505, lon: -46.6333, region: "America/Sao_Paulo" },
       { name: "Johannesburg", lat: -26.2041, lon: 28.0473, region: "Africa/Johannesburg" },
-      { name: "Toronto", lat: 43.65107, lon: -79.347015, region: "America/New_York" },
-      { name: "Paris", lat: 48.8566, lon: 2.3522, region: "Europe/London" },
-      { name: "Delhi", lat: 28.7041, lon: 77.1025, region: "Asia/Tokyo" },
-      { name: "Cairo", lat: 30.0444, lon: 31.2357, region: "Africa/Johannesburg" },
-      { name: "Mexico City", lat: 19.4326, lon: -99.1332, region: "America/Sao_Paulo" },
-      { name: "Los Angeles", lat: 34.0522, lon: -118.2437, region: "America/New_York" },
-      { name: "Moscow", lat: 55.7558, lon: 37.6173, region: "Europe/London" },
-      { name: "Beijing", lat: 39.9042, lon: 116.4074, region: "Asia/Tokyo" },
-      { name: "Bangkok", lat: 13.7563, lon: 100.5018, region: "Asia/Tokyo" },
-      { name: "Buenos Aires", lat: -34.6037, lon: -58.3816, region: "America/Sao_Paulo" },
-      { name: "Istanbul", lat: 41.0082, lon: 28.9784, region: "Europe/London" },
-      { name: "Seoul", lat: 37.5665, lon: 126.9780, region: "Asia/Tokyo" },
-      { name: "Lagos", lat: 6.5244, lon: 3.3792, region: "Africa/Johannesburg" },
-      { name: "Singapore", lat: 1.3521, lon: 103.8198, region: "Asia/Tokyo" },
+      { name: "Los Angeles", lat: 34.0522, lon: -118.2437, region: "America/Los_Angeles" },
+      { name: "Paris", lat: 48.8566, lon: 2.3522, region: "Europe/Paris" },
+      { name: "Singapore", lat: 1.3521, lon: 103.8198, region: "Asia/Singapore" },
+      { name: "Delhi", lat: 28.7041, lon: 77.1025, region: "Asia/Kolkata" },
+      { name: "Mexico City", lat: 19.4326, lon: -99.1332, region: "America/Mexico_City" },
+      { name: "Moscow", lat: 55.7558, lon: 37.6173, region: "Europe/Moscow" },
+      { name: "Beijing", lat: 39.9042, lon: 116.4074, region: "Asia/Shanghai" },
+      { name: "Bangkok", lat: 13.7563, lon: 100.5018, region: "Asia/Bangkok" },
+      { name: "Buenos Aires", lat: -34.6037, lon: -58.3816, region: "America/Argentina/Buenos_Aires" },
+      { name: "Seoul", lat: 37.5665, lon: 126.978, region: "Asia/Seoul" },
+      { name: "Dubai", lat: 25.276987, lon: 55.296249, region: "Asia/Dubai" },
+      { name: "Toronto", lat: 43.6532, lon: -79.3832, region: "America/Toronto" },
+      { name: "Lagos", lat: 6.5244, lon: 3.3792, region: "Africa/Lagos" },
+      { name: "Istanbul", lat: 41.0082, lon: 28.9784, region: "Europe/Istanbul" }
     ];
 
-    // Create markers
+    // Create circle markers
     const dots = [];
     cities.forEach(c => {
       const marker = L.circleMarker([c.lat, c.lon], {
         radius: 4,
-        color: 'cyan',
-        fillColor: 'cyan',
+        color: "cyan",
+        fillColor: "cyan",
         fillOpacity: 0.8
       }).addTo(map);
       marker.bindTooltip(c.name, { direction: "top" });
       dots.push({ marker, ...c });
     });
 
-    // Function to measure latency
     async function measurePing(region) {
       const url = `https://worldtimeapi.org/api/timezone/${region}`;
       const start = performance.now();
       try {
-        await fetch(url, { cache: "no-store", mode: "cors" });
+        const response = await fetch(url, { cache: "no-store", mode: "cors" });
+        if (!response.ok) throw new Error("Bad response");
         return Math.round(performance.now() - start);
       } catch (err) {
         return null;
       }
     }
 
-    // Run the ping test
     document.getElementById("start").addEventListener("click", async () => {
-      document.getElementById("status").innerText = "Pinging global servers...";
+      document.getElementById("status").innerText = "🌍 Running real pings...";
       const regionCache = {};
 
       for (const d of dots) {
         if (!regionCache[d.region]) {
-          const latency = await measurePing(d.region);
-          regionCache[d.region] = latency;
+          regionCache[d.region] = await measurePing(d.region);
         }
-
         const latency = regionCache[d.region];
         let color = "gray";
-
         if (latency === null) color = "gray";
         else if (latency < 100) color = "lime";
         else if (latency < 250) color = "yellow";
         else color = "red";
-
         d.marker.setStyle({ color, fillColor: color });
       }
 
-      document.getElementById("status").innerText = "✅ Ping test complete!";
+      document.getElementById("status").innerText = "✅ Real ping test complete!";
     });
   </script>
 </body>
